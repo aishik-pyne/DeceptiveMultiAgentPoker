@@ -57,8 +57,20 @@ class LimitholdemCollaborativeEnv(Env):
 
         public_cards = state['public_cards']
         hand = state['hand']
+
         raise_nums = state['raise_nums']
         cards = public_cards + hand
+        idx = [self.card2index[card] for card in cards]
+        
+        #Commenting to check if improvement because of epochs
+        # curr_player_id = self.get_player_id()
+        # if curr_player_id == 0:
+        #     friend_cards = self.game.players[1].hand
+        #     idx += [self.card2index[f"{card.suit}{card.rank}"] for card in friend_cards]
+        # elif curr_player_id == 1:
+        #     friend_cards = self.game.players[0].hand
+        #     idx += [self.card2index[f"{card.suit}{card.rank}"] for card in friend_cards]
+        
         idx = [self.card2index[card] for card in cards]
         raise_by_collaborator = state['raise_by_collaborator']
         obs = np.zeros(76)
