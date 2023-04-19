@@ -13,6 +13,7 @@ from rlcard.utils import (
     Logger,
     plot_curve,
 )
+from rlcard.models.limitholdem_rule_models import LimitholdemRuleAgentV1
 
 def train(args):
 
@@ -24,6 +25,13 @@ def train(args):
 
     # Make the environment with seed
     env = rlcard.make(
+        args.env,
+        config={
+            'seed': args.seed,
+            'game_num_players': 3
+        }
+    )
+    eval_env = rlcard.make(
         args.env,
         config={
             'seed': args.seed,
@@ -42,38 +50,38 @@ def train(args):
         )
     elif args.algorithm == 'nfsp':
         from rlcard.agents import NFSPAgent
-        # agent1 = NFSPAgent(
-        #     num_actions=env.num_actions,
-        #     state_shape=env.state_shape[0],
-        #     hidden_layers_sizes=[64,64],
-        #     q_mlp_layers=[64,64],
-        #     device='cuda:0',
-        # )
-        # agent2 = NFSPAgent(
-        #     num_actions=env.num_actions,
-        #     state_shape=env.state_shape[0],
-        #     hidden_layers_sizes=[64,64],
-        #     q_mlp_layers=[64,64],
-        #     device='cuda:0',
-        # )
-        # agent3 = NFSPAgent(
-        #     num_actions=env.num_actions,
-        #     state_shape=env.state_shape[0],
-        #     hidden_layers_sizes=[64,64],
-        #     q_mlp_layers=[64,64],
-        #     device='cuda:0',
-        # )
+        agent1 = NFSPAgent(
+            num_actions=env.num_actions,
+            state_shape=env.state_shape[0],
+            hidden_layers_sizes=[64,64],
+            q_mlp_layers=[64,64],
+            device='cuda:0',
+        )
+        agent2 = NFSPAgent(
+            num_actions=env.num_actions,
+            state_shape=env.state_shape[0],
+            hidden_layers_sizes=[64,64],
+            q_mlp_layers=[64,64],
+            device='cuda:0',
+        )
+        agent3 = NFSPAgent(
+            num_actions=env.num_actions,
+            state_shape=env.state_shape[0],
+            hidden_layers_sizes=[64,64],
+            q_mlp_layers=[64,64],
+            device='cuda:0',
+        )
 
-    # agent1 = torch.load('/content/drive/MyDrive/CS6284/agent1.pth')
+    agent1 = torch.load('./checkpoint_collab/collab_brain2_more_info.pth')
+    agent2 = torch.load('./checkpoint_collab/comp_brain1.pth')
     # agent2 = torch.load('/content/drive/MyDrive/CS6284/agent2.pth')
-    agent1 = torch.load(r'./checkpoint_collab/collab_nfsp_friend1.pth')
-    agent2 = torch.load(r'./checkpoint_collab/collab_nfsp_friend2.pth')
-    agent3 = torch.load(r'./checkpoint_collab/collab_nfsp_comp2.pth')
+    # agent3 = torch.load('/content/drive/MyDrive/CS6284/agent3.pth')
     
-    agents = [agent1, agent2, agent3]
+    agents = [agent1, agent1, agent2]
     # for _ in range(1, env.num_players):
     #     agents.append(RandomAgent(num_actions=env.num_actions))
     env.set_agents(agents)
+    eval_env.set_agents(agents)
 
     # Start training
     with Logger(args.log_dir) as logger:
@@ -102,17 +110,19 @@ def train(args):
                 logger.log_performance(
                     episode,
                     tournament(
-                        env,
+                        eval_env,
                         args.num_eval_games,
                     )
                 )
+
+
             if episode % 5000 == 0:
-              save_path1 = os.path.join(args.log_dir, f'{episode}_collab_nfsp_friend1.pth')
-              save_path2 = os.path.join(args.log_dir, f'{episode}_collab_nfsp_friend2.pth')
+              save_path1 = os.path.join(args.log_dir, f'{episode}_collab_brain2_more_info.pth')
+            #   save_path2 = os.path.join(args.log_dir, f'{episode}_collab_nfsp_comp2.pth')
             #   save_path3 = os.path.join(args.log_dir, f'{episode}_collab_nfsp_comp3.pth')
               
               torch.save(agent1, save_path1)
-              torch.save(agent2, save_path2)
+            #   torch.save(agent2, save_path2)
             #   torch.save(agent3, save_path3)
 
         # Get the paths
@@ -122,12 +132,12 @@ def train(args):
     # plot_curve(csv_path, fig_path, args.algorithm)
 
     # Save model
-    save_path1 = os.path.join(args.log_dir, 'collab_nfsp_friend1.pth')
-    save_path2 = os.path.join(args.log_dir, 'collab_nfsp_friend2.pth')
+    save_path1 = os.path.join(args.log_dir, 'collab_brain2_more_info.pth')
+    # save_path2 = os.path.join(args.log_dir, 'collab_nfsp_comp2.pth')
     # save_path3 = os.path.join(args.log_dir, 'collab_nfsp_comp3.pth')
     
     torch.save(agent1, save_path1)
-    torch.save(agent2, save_path2)
+    # torch.save(agent2, save_path2)
     # torch.save(agent3, save_path3)
     print('Model saved in', save_path1)
     
@@ -163,7 +173,7 @@ if __name__ == '__main__':
     parser.add_argument(
         '--cuda',
         type=str,
-        default='cuda:0',
+        default='',
     )
     parser.add_argument(
         '--seed',
@@ -173,7 +183,7 @@ if __name__ == '__main__':
     parser.add_argument(
         '--num_episodes',
         type=int,
-        default=25000,
+        default=65000,
     )
     parser.add_argument(
         '--num_eval_games',
@@ -183,7 +193,7 @@ if __name__ == '__main__':
     parser.add_argument(
         '--evaluate_every',
         type=int,
-        default=100,
+        default=500,
     )
     parser.add_argument(
         '--log_dir',

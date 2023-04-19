@@ -13,6 +13,7 @@ from rlcard.utils import (
     Logger,
     plot_curve,
 )
+from rlcard.models.limitholdem_rule_models import LimitholdemRuleAgentV1
 
 def train(args):
 
@@ -28,6 +29,13 @@ def train(args):
         config={
             'seed': args.seed,
             'game_num_players': 3
+        }
+    )
+    eval_env = rlcard.make(
+        args.env,
+        config={
+            'seed': args.seed,
+            'game_num_players': 2
         }
     )
 
@@ -64,14 +72,15 @@ def train(args):
             device='cuda:0',
         )
 
-    # agent1 = torch.load('/content/drive/MyDrive/CS6284/agent1.pth')
+    agent1 = torch.load('./checkpoint_collab/collab_nfsp_comp2.pth')
     # agent2 = torch.load('/content/drive/MyDrive/CS6284/agent2.pth')
     # agent3 = torch.load('/content/drive/MyDrive/CS6284/agent3.pth')
     
-    agents = [agent1, agent2, agent3]
+    agents = [agent1, agent1, agent1]
     # for _ in range(1, env.num_players):
     #     agents.append(RandomAgent(num_actions=env.num_actions))
     env.set_agents(agents)
+    eval_env.set_agents([agent1, LimitholdemRuleAgentV1()])
 
     # Start training
     with Logger(args.log_dir) as logger:
@@ -100,18 +109,20 @@ def train(args):
                 logger.log_performance(
                     episode,
                     tournament(
-                        env,
+                        eval_env,
                         args.num_eval_games,
                     )
                 )
+
+
             if episode % 5000 == 0:
-              save_path1 = os.path.join(args.log_dir, f'{episode}_collab_nfsp_comp1.pth')
-              save_path2 = os.path.join(args.log_dir, f'{episode}_collab_nfsp_comp2.pth')
-              save_path3 = os.path.join(args.log_dir, f'{episode}_collab_nfsp_comp3.pth')
+              save_path1 = os.path.join(args.log_dir, f'{episode}_comp_brain1.pth')
+            #   save_path2 = os.path.join(args.log_dir, f'{episode}_collab_nfsp_comp2.pth')
+            #   save_path3 = os.path.join(args.log_dir, f'{episode}_collab_nfsp_comp3.pth')
               
               torch.save(agent1, save_path1)
-              torch.save(agent2, save_path2)
-              torch.save(agent3, save_path3)
+            #   torch.save(agent2, save_path2)
+            #   torch.save(agent3, save_path3)
 
         # Get the paths
         csv_path, fig_path = logger.csv_path, logger.fig_path
@@ -120,13 +131,13 @@ def train(args):
     # plot_curve(csv_path, fig_path, args.algorithm)
 
     # Save model
-    save_path1 = os.path.join(args.log_dir, 'collab_nfsp_comp1.pth')
-    save_path2 = os.path.join(args.log_dir, 'collab_nfsp_comp2.pth')
-    save_path3 = os.path.join(args.log_dir, 'collab_nfsp_comp3.pth')
+    save_path1 = os.path.join(args.log_dir, 'comp_brain1.pth')
+    # save_path2 = os.path.join(args.log_dir, 'collab_nfsp_comp2.pth')
+    # save_path3 = os.path.join(args.log_dir, 'collab_nfsp_comp3.pth')
     
     torch.save(agent1, save_path1)
-    torch.save(agent2, save_path2)
-    torch.save(agent3, save_path3)
+    # torch.save(agent2, save_path2)
+    # torch.save(agent3, save_path3)
     print('Model saved in', save_path1)
     
     # return csv_path, fig_path
@@ -181,7 +192,7 @@ if __name__ == '__main__':
     parser.add_argument(
         '--evaluate_every',
         type=int,
-        default=100,
+        default=500,
     )
     parser.add_argument(
         '--log_dir',
