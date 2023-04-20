@@ -72,7 +72,7 @@ def train(args):
             device='cuda:0',
         )
 
-    agent1 = torch.load('./checkpoint_collab/collab_nfsp_comp2.pth')
+    agent1 = torch.load('./checkpoint_collab/comp_brain1.pth')
     # agent2 = torch.load('/content/drive/MyDrive/CS6284/agent2.pth')
     # agent3 = torch.load('/content/drive/MyDrive/CS6284/agent3.pth')
     
@@ -116,7 +116,7 @@ def train(args):
 
 
             if episode % 5000 == 0:
-              save_path1 = os.path.join(args.log_dir, f'{episode}_comp_brain1.pth')
+              save_path1 = os.path.join(args.log_dir, f'{episode}_comp_brain1_65k.pth')
             #   save_path2 = os.path.join(args.log_dir, f'{episode}_collab_nfsp_comp2.pth')
             #   save_path3 = os.path.join(args.log_dir, f'{episode}_collab_nfsp_comp3.pth')
               
@@ -131,7 +131,7 @@ def train(args):
     # plot_curve(csv_path, fig_path, args.algorithm)
 
     # Save model
-    save_path1 = os.path.join(args.log_dir, 'comp_brain1.pth')
+    save_path1 = os.path.join(args.log_dir, 'comp_brain1_65k.pth')
     # save_path2 = os.path.join(args.log_dir, 'collab_nfsp_comp2.pth')
     # save_path3 = os.path.join(args.log_dir, 'collab_nfsp_comp3.pth')
     
@@ -182,7 +182,7 @@ if __name__ == '__main__':
     parser.add_argument(
         '--num_episodes',
         type=int,
-        default=25000,
+        default=65000,
     )
     parser.add_argument(
         '--num_eval_games',
@@ -197,7 +197,7 @@ if __name__ == '__main__':
     parser.add_argument(
         '--log_dir',
         type=str,
-        default='./checkpoint_collab',
+        default='./checkpoint_comp_65k',
     )
 
     args = parser.parse_args()

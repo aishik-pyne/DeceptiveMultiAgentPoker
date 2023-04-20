@@ -71,7 +71,7 @@ class LimitholdemCollaborativeEnv(Env):
         #     friend_cards = self.game.players[0].hand
         #     idx += [self.card2index[f"{card.suit}{card.rank}"] for card in friend_cards]
         
-        idx = [self.card2index[card] for card in cards]
+        # idx = [self.card2index[card] for card in cards]
         raise_by_collaborator = state['raise_by_collaborator']
         obs = np.zeros(76)
         obs[idx] = 1
